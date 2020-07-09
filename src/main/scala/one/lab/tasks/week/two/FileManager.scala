@@ -1,10 +1,8 @@
 package one.lab.tasks.week.two
 
-import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.{Files, Paths}
 
 import scala.jdk.CollectionConverters._
-import scala.util.chaining._
 
 /**
   * Можете реализовать свою логику.
@@ -29,6 +27,7 @@ object FileManager extends App {
   case class ListDirectoryCommand()           extends Command
   case class ListFilesCommand()               extends Command
   case class ListAllContentCommand()          extends Command
+  case class UnrecognizedCommand()            extends Command
 
   case class ChangeDirectoryCommand(destination: String) extends Command {
     override val isSubstitutive: Boolean = true
@@ -36,10 +35,69 @@ object FileManager extends App {
 
   case class ChangePathError(error: String)
 
-  def getFiles(path: String): List[String]                                       = ???
-  def getDirectories(path: String): List[String]                                 = ???
-  def changePath(current: String, path: String): Either[ChangePathError, String] = ???
-  def parseCommand(input: String): Command                                       = ???
-  def handleCommand(command: Command, currentPath: String): String               = ???
-  def main(basePath: String): Unit                                               = ???
+  def getFiles(path: String): List[String] = {
+    Files
+      .list(Paths.get(path))
+      .iterator()
+      .asScala
+      .filter(path => path.toFile.isFile)
+      .map(path => path.toFile.getName)
+      .map(x => s"$path/$x")
+      .toList
+  }
+
+  def getDirectories(path: String): List[String] = {
+    Files
+      .list(Paths.get(path))
+      .iterator()
+      .asScala
+      .filter(path => path.toFile.isDirectory)
+      .map(path => path.toFile.getName)
+      .map(x => s"$path/$x")
+      .toList
+  }
+  def changePath(current: String, path: String): Either[ChangePathError, String] = {
+    if (path == ".."){
+      val newpath = current.substring(0, current.lastIndexOf("/"))
+      Right(newpath)
+    }
+    else {
+      val newpath = current + "/" + path
+      if (Files.isDirectory(Paths.get(newpath))) {
+        Right(newpath)
+      }
+      else{
+        Left(ChangePathError(s"$path No such file or directory"))
+      }
+    }
+  }
+  def parseCommand(input: String): Command = {
+    if (input == "ll") ListAllContentCommand()
+    else if (input == "ls") ListFilesCommand()
+    else if (input == "dir") ListDirectoryCommand()
+    else if (input.startsWith("cd")) ChangeDirectoryCommand(input.substring(3))
+    else UnrecognizedCommand()
+  }
+  def handleCommand(command: Command, currentPath: String): String = {
+    command match {
+      case ListAllContentCommand() => getFiles(currentPath).mkString("\n") + getDirectories(currentPath).mkString("\n")
+      case ListDirectoryCommand() => getDirectories(currentPath).mkString("\n")
+      case ListFilesCommand() => getFiles(currentPath).mkString("\n")
+      case ChangeDirectoryCommand(newpath) => changePath(currentPath, newpath) match {
+        case Left(output) => output.error
+        case Right(output) => output
+      }
+      case _ => "command not found"
+    }
+  }
+  def main(basePath: String): Unit = {
+    var currentPath = basePath
+    while (true) {
+      val command = parseCommand(scala.io.StdIn.readLine())
+      val output = handleCommand(command, currentPath)
+      if (command.isSubstitutive) currentPath = output
+      println(output)
+    }
+  }
+  main("/home/azimov/Desktop")
 }
