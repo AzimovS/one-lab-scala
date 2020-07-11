@@ -91,13 +91,14 @@ object FileManager extends App {
     }
   }
   def main(basePath: String): Unit = {
-    var currentPath = basePath
-    while (true) {
+    def recmain(path: String): Unit = {
       val command = parseCommand(scala.io.StdIn.readLine())
-      val output = handleCommand(command, currentPath)
-      if (command.isSubstitutive) currentPath = output
+      val output = handleCommand(command, path)
       println(output)
+      if (command.isSubstitutive) recmain(output)
+      else recmain(path)
     }
+    recmain(basePath)
   }
   main("/home/azimov/Desktop")
 }

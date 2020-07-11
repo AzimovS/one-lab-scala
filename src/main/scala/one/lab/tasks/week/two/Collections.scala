@@ -49,40 +49,40 @@ object Collections {
   // getNthElement(3, List(1 ,2, 3, 4)) -> 3
   // getNthElement(3, List(1))          -> java.lang.IndexOutOfBoundsException
   def getNthElement[A](findNum: Int, list: List[A]): A = {
-    def NthElement(start: Int, find: Int, list: List[A]): A = {
+    def nthElement(start: Int, find: Int, list: List[A]): A = {
       list match {
         case Nil => throw new java.lang.IndexOutOfBoundsException()
-        case x :: tail => if (start == find) x else NthElement(start + 1, find, tail)
+        case x :: tail => if (start == find) x else nthElement(start + 1, find, tail)
       }
     }
 
-    NthElement(1, findNum, list)
+    nthElement(1, findNum, list)
   }
 
   // getNthElementOption(3, List(1 ,2, 3, 4)) -> Some(3)
   // getNthElementOption(3, List(1))          -> None
   def getNthElementOption[A](n: Int, list: List[A]): Option[A] = {
-    def NthElement(start: Int, find: Int, list: List[A]): Option[A] = {
+    def nthElement(start: Int, find: Int, list: List[A]): Option[A] = {
       list match {
         case Nil => None
-        case x :: tail => if (start == find) Some(x) else NthElement(start + 1, find, tail)
+        case x :: tail => if (start == find) Some(x) else nthElement(start + 1, find, tail)
       }
     }
 
-    NthElement(1, n, list)
+    nthElement(1, n, list)
   }
 
   // getLength(List(1,2,3)) -> 3
   // getLength(List())      -> 0
   def getLength[A](list: List[A]): Int = {
-    def NumElements(total: Int, list: List[A]): Int = {
+    def numElements(total: Int, list: List[A]): Int = {
       list match {
         case Nil => total
-        case x :: tail => NumElements(total + 1, tail)
+        case x :: tail => numElements(total + 1, tail)
       }
     }
 
-    NumElements(0, list)
+    numElements(0, list)
   }
 
   // getReversedList(List(1,2,3)) -> List(3,2,1)
