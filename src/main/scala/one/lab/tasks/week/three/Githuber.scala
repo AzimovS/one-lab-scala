@@ -19,15 +19,25 @@ object Githuber extends App {
   implicit val defaultFormats: DefaultFormats.type        = DefaultFormats
 
   // TODO: поля можете добавить какие хотите
-  case class GithubUser()
-  case class GithubRepository()
+  case class GithubUser(login: String)
+  case class GithubRepository(repoName: String)
 
   //  https://api.github.com/users/{$USER}
-  def getGithubUser(username: String): Future[GithubUser] = ???
+  def getGithubUser(username: String): Future[GithubUser] = {
+    RestClientImpl.get(s"https://api.github.com/users/$username").map(body => parse(body).camelizeKeys.extract[GithubUser])
+  }
 
-  def getUserRepositories(repoUrl: String): Future[List[GithubRepository]] = ???
+  def getUserRepositories(repoUrl: String): Future[List[GithubRepository]] = {
+    RestClientImpl.get(repoUrl).map(body => parse(body).camelizeKeys.extract[List[GithubRepository]])
+  }
 
-  def getUserInfo(username: String): Unit = ???
+  def getUserInfo(username: String): Unit = {
+    val repoUrl = s"https://api.github.com/users/$username/repos"
+    getGithubUser(username).onComplete {
+      case Success(result) => println(result, getUserRepositories(repoUrl))
+      case Failure(err) => println("Error")
+    }
+  }
 
-  getUserInfo("")
+  getUserInfo("Azimovs")
 }
