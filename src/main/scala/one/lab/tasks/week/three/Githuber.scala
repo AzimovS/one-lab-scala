@@ -20,7 +20,7 @@ object Githuber extends App {
 
   // TODO: поля можете добавить какие хотите
   case class GithubUser(login: String)
-  case class GithubRepository(repoName: String)
+  case class GithubRepository(name: String)
 
   //  https://api.github.com/users/{$USER}
   def getGithubUser(username: String): Future[GithubUser] = {
@@ -34,7 +34,11 @@ object Githuber extends App {
   def getUserInfo(username: String): Unit = {
     val repoUrl = s"https://api.github.com/users/$username/repos"
     getGithubUser(username).onComplete {
-      case Success(result) => println(result, getUserRepositories(repoUrl))
+      case Success(result) =>
+        println(result)
+        getUserRepositories(repoUrl).onComplete{
+          case Success(repos) => repos.foreach(repo => println(repo.name))
+        }
       case Failure(err) => println("Error")
     }
   }
